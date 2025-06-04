@@ -6,6 +6,8 @@ import cors from 'cors';
 import morgan from 'morgan';
 import compression from 'compression';
 
+import v1Routes from './routes/v1';
+
 const app = express();
 
 const PORT = process.env.PORT || 3001;
@@ -28,8 +30,20 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Response comprension
+app.use(compression());
+
 app.get('/', (_, res) => {
   res.send('Hello world');
+});
+
+app.use('/api/v1', v1Routes);
+
+app.use((req, res) => {
+  res.status(404).json({
+    status: 'error',
+    message: `Route ${req.originalUrl} not found`,
+  });
 });
 
 app.listen(PORT, () => {
