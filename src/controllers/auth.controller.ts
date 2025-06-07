@@ -14,6 +14,19 @@ export const register = async (req: TypedRequest<RegisterDto>, res: Response) =>
   }
 };
 
-export const login = (req: TypedRequest<LoginDto>, res: Response) => {
-  res.send('User login');
+export const login = async (req: TypedRequest<LoginDto>, res: Response) => {
+  try {
+    const { user, refreshToken, accessToken } = await authService.login(req.body);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(HttpStatus.READ_SUCCESS).json({ user, accessToken });
+  } catch (e) {
+    console.log(e);
+  }
 };

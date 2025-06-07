@@ -22,5 +22,15 @@ export const createUser = async ({ email, role, password, username }: RegisterDt
 export const findUserByEmail = async (email: User['email']) => {
   return await prisma.user.findUnique({
     where: { email },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      role: true,
+    },
   });
+};
+
+export const findUserByEmailWithCredentials = async (email: User['email']) => {
+  return await prisma.user.findUnique({ where: { email } });
 };
