@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { ZodError, ZodSchema } from 'zod';
+import { HttpStatus } from '../constants/http-codes';
 
 export const validateRequestBody =
   <T extends ZodSchema>(schema: T) =>
@@ -10,7 +11,7 @@ export const validateRequestBody =
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        res.status(400).json({ errors: error.errors });
+        res.status(HttpStatus.VALIDATION_ERROR).json({ errors: error.errors });
         return;
       }
 
