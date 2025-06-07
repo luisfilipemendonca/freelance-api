@@ -10,6 +10,12 @@ export const createUser = async ({ email, role, password, username }: RegisterDt
       password,
       role,
     },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      role: true,
+    },
   });
 };
 
