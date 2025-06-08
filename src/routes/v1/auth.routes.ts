@@ -14,4 +14,6 @@ router.get('/test', authenticate, authorize(Role.FREELANCER), authController.reg
 
 router.post('/login', validateRequestBody(loginDto), authController.login);
 
+router.post('/logout', authController.logout);
+
 export default router;

@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { LoginDto, RegisterDto } from '../dtos/auth.dto';
 import { TypedRequest } from '../types/request';
 import * as authService from '../services/auth.service';
@@ -29,4 +29,14 @@ export const login = async (req: TypedRequest<LoginDto>, res: Response) => {
   } catch (e) {
     console.log(e);
   }
+};
+
+export const logout = (req: Request, res: Response) => {
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+
+  res.status(HttpStatus.READ_SUCCESS).json({ message: 'Logged out successfully' });
 };
