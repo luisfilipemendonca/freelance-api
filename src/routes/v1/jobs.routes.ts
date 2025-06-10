@@ -1,4 +1,9 @@
 import { Router } from 'express';
+import { authenticate } from '../../middlewares/authenticate';
+import { authorize } from '../../middlewares/authorize';
+import * as jobsController from '../../controllers/jobs.controller';
+import { validateRequestBody } from '../../middlewares/validateRequestBody';
+import { createJobDto } from '../../dtos/jobs.dto';
 
 const router = Router();
 
@@ -10,9 +15,7 @@ router.get('/:id', (req, res) => {
   res.send(`Job ${req.params.id}`);
 });
 
-router.post('/', (req, res) => {
-  res.send('Job created');
-});
+router.post('/', authenticate, authorize('CLIENT'), validateRequestBody(createJobDto), jobsController.create);
 
 router.patch('/:id', (req, res) => {
   res.send(`Job ${req.params.id} updated`);

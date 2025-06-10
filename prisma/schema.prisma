@@ -18,6 +18,13 @@ enum Role {
   FREELANCER
 }
 
+enum JobStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+  CANCELLED
+}
+
 model User {
   id                Int                @id @default(autoincrement())
   username          String             @unique
@@ -29,6 +36,7 @@ model User {
   clientProfile     ClientProfile?
   freelancerProfile FreelancerProfile?
   sessions          Session[]
+  jobs              Job[]
 }
 
 model ClientProfile {
@@ -67,4 +75,17 @@ model Session {
   ip           String?
   createdAt    DateTime @default(now())
   expiresAt    DateTime
+}
+
+model Job {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  budget      Float?
+  status      JobStatus @default(OPEN)
+  deadline    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  client      User      @relation(fields: [clientId], references: [id])
+  clientId    Int
 }
