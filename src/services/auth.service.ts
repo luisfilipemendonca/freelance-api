@@ -27,10 +27,6 @@ export const login = async ({ email: userEmail, password }: LoginDto) => {
   if (!isPasswordValid) throw new Error('Invalid credentials');
 
   const { email, id, role, username } = user;
-  const jwtPayload: JwtPayload = { sub: id.toString(), role: role };
-
-  const accessToken = signAccessToken(jwtPayload);
-  const refreshToken = signRefreshToken(jwtPayload);
 
   return {
     user: {
@@ -39,7 +35,5 @@ export const login = async ({ email: userEmail, password }: LoginDto) => {
       role: role.toLowerCase(),
       username,
     },
-    accessToken,
-    refreshToken,
   };
 };

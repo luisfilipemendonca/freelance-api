@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { ACCESS_TOKEN_EXPIRATION, ACCESS_TOKEN_SECRET, REFRESH_TOKEN_EXPIRATION, REFRESH_TOKEN_SECRET } from '../constants/jwt';
-import { JwtPayload } from '../types/jwt';
+import { JwtPayload, JwtRefreshPayload } from '../types/jwt';
 
 export const signAccessToken = (payload: JwtPayload) => {
   return jwt.sign(payload, ACCESS_TOKEN_SECRET, {
@@ -8,7 +8,7 @@ export const signAccessToken = (payload: JwtPayload) => {
   });
 };
 
-export const signRefreshToken = (payload: JwtPayload) => {
+export const signRefreshToken = (payload: JwtRefreshPayload) => {
   return jwt.sign(payload, REFRESH_TOKEN_SECRET, {
     expiresIn: REFRESH_TOKEN_EXPIRATION,
   });

@@ -5,7 +5,8 @@ import * as authService from '../services/auth.service';
 import { HttpStatus } from '../constants/http-codes';
 import { createSession, deleteSessionById, getValidSession, updateSessionById } from '../services/session.service';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt';
-import { JwtPayload } from '../types/jwt';
+import { JwtPayload, JwtRefreshPayload } from '../types/jwt';
+import { Role } from '@prisma/client';
 
 export const register = async (req: TypedRequest<RegisterDto>, res: Response) => {
   try {
@@ -19,10 +20,16 @@ export const register = async (req: TypedRequest<RegisterDto>, res: Response) =>
 
 export const login = async (req: TypedRequest<LoginDto>, res: Response) => {
   try {
-    const { user, refreshToken, accessToken } = await authService.login(req.body);
-    const tokenMaxAge = 7 * 24 * 60 * 60 * 1000;
+    const { user } = await authService.login(req.body);
 
-    await createSession({ userId: user.id, refreshToken, ip: req.ip, userAgent: req.get('User-Agent'), expiresAt: new Date(Date.now() + tokenMaxAge) });
+    const tokenMaxAge = 7 * 24 * 60 * 60 * 1000;
+    const jwtRefreshPayload: JwtRefreshPayload = { sub: user.id.toString(), role: user.role as Role };
+    const refreshToken = signRefreshToken(jwtRefreshPayload);
+
+    const session = await createSession({ userId: user.id, refreshToken, ip: req.ip, userAgent: req.get('User-Agent'), expiresAt: new Date(Date.now() + tokenMaxAge) });
+
+    const jwtPayload: JwtPayload = { ...jwtRefreshPayload, sid: session.id };
+    const accessToken = signAccessToken(jwtPayload);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -79,10 +86,11 @@ export const refresh = async (req: Request, res: Response) => {
     }
 
     const tokenMaxAge = 7 * 24 * 60 * 60 * 1000;
-    const newJwtPayload: JwtPayload = { sub: payload.sub, role: payload.role };
+    const newJwtRefreshPayload: JwtRefreshPayload = { sub: payload.sub, role: payload.role };
+    const newJwtPayload: JwtPayload = { ...newJwtRefreshPayload, sid: currentSession.id };
 
     const newAccessToken = signAccessToken(newJwtPayload);
-    const newRefreshToken = signRefreshToken(newJwtPayload);
+    const newRefreshToken = signRefreshToken(newJwtRefreshPayload);
 
     await updateSessionById({ ...currentSession, refreshToken: newRefreshToken, expiresAt: new Date(Date.now() + tokenMaxAge) });
 
