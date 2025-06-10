@@ -10,7 +10,8 @@ const router = Router();
 
 router.post('/register', validateRequestBody(registerDto), authController.register);
 
-router.get('/test', authenticate, authorize(Role.FREELANCER), authController.register);
+// router.get('/test', authenticate, authorize(Role.FREELANCER), authController.register);
+router.get('/test', authController.test);
 
 router.post('/login', validateRequestBody(loginDto), authController.login);
 
