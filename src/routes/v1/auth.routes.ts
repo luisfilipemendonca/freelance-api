@@ -15,7 +15,7 @@ router.get('/test', authController.test);
 
 router.post('/login', validateRequestBody(loginDto), authController.login);
 
-router.post('/logout', authController.logout);
+router.post('/logout', authenticate, authController.logout);
 
 router.post('/refresh', authController.refresh);
 

@@ -44,14 +44,24 @@ export const login = async (req: TypedRequest<LoginDto>, res: Response) => {
   }
 };
 
-export const logout = (req: Request, res: Response) => {
-  res.clearCookie('refreshToken', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  });
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
 
-  res.status(HttpStatus.READ_SUCCESS).json({ message: 'Logged out successfully' });
+    if (user) {
+      await deleteSessionById(user.sid);
+    }
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    res.status(HttpStatus.READ_SUCCESS).json({ message: 'Logged out successfully' });
+  } catch (e) {
+    console.log(e);
+  }
 };
 
 export const refresh = async (req: Request, res: Response) => {
