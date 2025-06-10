@@ -3,7 +3,8 @@ import { authenticate } from '../../middlewares/authenticate';
 import { authorize } from '../../middlewares/authorize';
 import * as jobsController from '../../controllers/jobs.controller';
 import { validateRequestBody } from '../../middlewares/validateRequestBody';
-import { createJobDto } from '../../dtos/jobs.dto';
+import { createJobDto, deleteJobDto } from '../../dtos/jobs.dto';
+import { validateRequestParams } from '../../middlewares/validateRequestParams';
 
 const router = Router();
 
@@ -21,8 +22,6 @@ router.patch('/:id', (req, res) => {
   res.send(`Job ${req.params.id} updated`);
 });
 
-router.delete('/:id', (req, res) => {
-  res.send(`Job ${req.params.id} deleted`);
-});
+router.delete('/:id', authenticate, authorize('CLIENT'), validateRequestParams(deleteJobDto), jobsController.deleteJob);
 
 export default router;

@@ -12,4 +12,9 @@ export const createJobDto = z.object({
   deadline: z.date().optional(),
 });
 
+export const deleteJobDto = z.object({
+  id: z.string().regex(/^\d+$/),
+});
+
 export type CreateJobDto = z.infer<typeof createJobDto>;
+export type DeleteJobDto = z.infer<typeof deleteJobDto>;

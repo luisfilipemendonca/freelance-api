@@ -1,3 +1,3 @@
 import { Request } from 'express';
 
-export type TypedRequest<T extends Record<string, any>> = Request<{}, {}, T>;
+export type TypedRequest<B extends {} = {}, P extends {} = {}, Q extends {} = {}> = Request<P, {}, B, Q>;
