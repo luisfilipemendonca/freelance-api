@@ -3,7 +3,7 @@ import { authenticate } from '../../middlewares/authenticate';
 import { authorize } from '../../middlewares/authorize';
 import * as jobsController from '../../controllers/jobs.controller';
 import { validateRequestBody } from '../../middlewares/validateRequestBody';
-import { createJobDto, deleteJobDto } from '../../dtos/jobs.dto';
+import { createJobDto, getJobDto, updateJobDto } from '../../dtos/jobs.dto';
 import { validateRequestParams } from '../../middlewares/validateRequestParams';
 
 const router = Router();
@@ -12,16 +12,12 @@ router.get('/', (req, res) => {
   res.send('Jobs list');
 });
 
-router.get('/:id', (req, res) => {
-  res.send(`Job ${req.params.id}`);
-});
+router.get('/:id', authenticate, validateRequestParams(getJobDto), jobsController.getJob);
 
 router.post('/', authenticate, authorize('CLIENT'), validateRequestBody(createJobDto), jobsController.create);
 
-router.patch('/:id', (req, res) => {
-  res.send(`Job ${req.params.id} updated`);
-});
+router.patch('/:id', authenticate, authorize('CLIENT'), validateRequestParams(getJobDto), validateRequestBody(updateJobDto), jobsController.updateJob);
 
-router.delete('/:id', authenticate, authorize('CLIENT'), validateRequestParams(deleteJobDto), jobsController.deleteJob);
+router.delete('/:id', authenticate, authorize('CLIENT'), validateRequestParams(getJobDto), jobsController.deleteJob);
 
 export default router;
