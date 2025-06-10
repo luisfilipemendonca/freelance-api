@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
 
 import v1Routes from './routes/v1';
 
@@ -32,6 +33,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Response comprension
 app.use(compression());
+
+// Cookie parser
+app.use(cookieParser());
 
 app.get('/', (_, res) => {
   res.send('Hello world');
