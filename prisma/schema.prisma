@@ -25,18 +25,28 @@ enum JobStatus {
   CANCELLED
 }
 
+enum ContractStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
 model User {
-  id                Int                @id @default(autoincrement())
-  username          String             @unique
-  email             String             @unique
-  password          String
-  role              Role               @default(CLIENT)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  clientProfile     ClientProfile?
-  freelancerProfile FreelancerProfile?
-  sessions          Session[]
-  jobs              Job[]
+  id                  Int                @id @default(autoincrement())
+  username            String             @unique
+  email               String             @unique
+  password            String
+  role                Role               @default(CLIENT)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  clientProfile       ClientProfile?
+  freelancerProfile   FreelancerProfile?
+  sessions            Session[]
+  jobs                Job[]
+  clientContracts     Contract[]         @relation("ClientContracts")
+  freelancerContracts Contract[]         @relation("FreelancerContracts")
 }
 
 model ClientProfile {
@@ -86,6 +96,23 @@ model Job {
   deadline    DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  client      User      @relation(fields: [clientId], references: [id])
   clientId    Int
+  client      User      @relation(fields: [clientId], references: [id])
+  contract    Contract?
+}
+
+model Contract {
+  id           Int            @id @default(autoincrement())
+  jobId        Int            @unique
+  job          Job            @relation(fields: [jobId], references: [id])
+  clientId     Int
+  client       User           @relation("ClientContracts", fields: [clientId], references: [id])
+  freelancerId Int
+  freelancer   User           @relation("FreelancerContracts", fields: [freelancerId], references: [id])
+  terms        String
+  status       ContractStatus @default(PENDING)
+  startDate    DateTime?
+  endDate      DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 }
