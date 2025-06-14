@@ -1,8 +1,20 @@
 import { Response } from 'express';
-import { CreateJobDto, GetJobDto, UpdateJobDto } from '../dtos/jobs.dto';
+import { CreateJobDto, GetJobDto, listJobQueryParamsDto, ListJobQueryParamsDto, UpdateJobDto } from '../dtos/jobs.dto';
 import { TypedRequest } from '../types/request';
-import { createJob, deleteJobById, getJobById, updateJobById } from '../services/job.service';
+import { createJob, deleteJobById, getJobById, listAllJobs, updateJobById } from '../services/job.service';
 import { HttpStatus } from '../constants/http-codes';
+import { validateRequestQueryParams } from '../middlewares/validateRequestQueryParams';
+
+export const listJobs = async (req: TypedRequest<{}, {}, ListJobQueryParamsDto>, res: Response) => {
+  try {
+    const parsedQueryParams = validateRequestQueryParams(listJobQueryParamsDto, req.query);
+    const jobs = await listAllJobs(parsedQueryParams);
+
+    res.status(HttpStatus.READ_SUCCESS).json({ jobs });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export const create = async (req: TypedRequest<CreateJobDto>, res: Response) => {
   try {

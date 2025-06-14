@@ -8,9 +8,7 @@ import { validateRequestParams } from '../../middlewares/validateRequestParams';
 
 const router = Router();
 
-router.get('/', (req, res) => {
-  res.send('Jobs list');
-});
+router.get('/', authenticate, jobsController.listJobs);
 
 router.get('/:id', authenticate, validateRequestParams(getJobDto), jobsController.getJob);
 

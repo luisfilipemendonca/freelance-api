@@ -1,5 +1,5 @@
-import { Job, User } from '@prisma/client';
-import { CreateJobDto, UpdateJobDto } from '../dtos/jobs.dto';
+import { Job, User, Prisma } from '@prisma/client';
+import { CreateJobDto, ListJobQueryParamsDto, UpdateJobDto } from '../dtos/jobs.dto';
 import { prisma } from '../lib/prisma';
 
 type CreateJob = CreateJobDto & {
@@ -12,6 +12,38 @@ type GetJobParams = {
 };
 
 type UpdateJobParams = UpdateJobDto & GetJobParams;
+
+export const listAllJobs = async (query: ListJobQueryParamsDto) => {
+  const { limit, order, page, sortBy, status, title } = query;
+
+  const where: Prisma.JobWhereInput = {};
+
+  if (status) where.status = status;
+
+  if (title) where.title = { contains: title, mode: 'insensitive' };
+
+  const [jobs, total] = await Promise.all([
+    prisma.job.findMany({
+      where,
+      take: +limit,
+      skip: (+page - 1) * +limit,
+      orderBy: {
+        [sortBy]: order,
+      },
+    }),
+    prisma.job.count({ where }),
+  ]);
+
+  return {
+    data: jobs,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / +limit),
+    },
+  };
+};
 
 export const createJob = async (data: CreateJob) => {
   return await prisma.job.create({
