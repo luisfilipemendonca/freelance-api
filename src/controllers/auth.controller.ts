@@ -23,7 +23,7 @@ export const login = async (req: TypedRequest<LoginDto>, res: Response) => {
     const { user } = await authService.login(req.body);
 
     const tokenMaxAge = 7 * 24 * 60 * 60 * 1000;
-    const jwtRefreshPayload: JwtRefreshPayload = { sub: user.id.toString(), role: user.role as Role };
+    const jwtRefreshPayload: JwtRefreshPayload = { sub: user.id.toString(), role: user.role.toUpperCase() as Role };
     const refreshToken = signRefreshToken(jwtRefreshPayload);
 
     const session = await createSession({ userId: user.id, refreshToken, ip: req.ip, userAgent: req.get('User-Agent'), expiresAt: new Date(Date.now() + tokenMaxAge) });
@@ -96,7 +96,7 @@ export const refresh = async (req: Request, res: Response) => {
     }
 
     const tokenMaxAge = 7 * 24 * 60 * 60 * 1000;
-    const newJwtRefreshPayload: JwtRefreshPayload = { sub: payload.sub, role: payload.role };
+    const newJwtRefreshPayload: JwtRefreshPayload = { sub: payload.sub, role: payload.role.toUpperCase() as Role };
     const newJwtPayload: JwtPayload = { ...newJwtRefreshPayload, sid: currentSession.id };
 
     const newAccessToken = signAccessToken(newJwtPayload);
