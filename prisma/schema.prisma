@@ -25,6 +25,13 @@ enum JobStatus {
   CANCELLED
 }
 
+enum ProposalStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
 enum ContractStatus {
   PENDING
   ACTIVE
@@ -47,6 +54,7 @@ model User {
   jobs                Job[]
   clientContracts     Contract[]         @relation("ClientContracts")
   freelancerContracts Contract[]         @relation("FreelancerContracts")
+  proposals           Proposal[]
 }
 
 model ClientProfile {
@@ -88,17 +96,33 @@ model Session {
 }
 
 model Job {
-  id          Int       @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   title       String
   description String
   budget      Float?
-  status      JobStatus @default(OPEN)
+  status      JobStatus  @default(OPEN)
   deadline    DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   clientId    Int
-  client      User      @relation(fields: [clientId], references: [id])
+  client      User       @relation(fields: [clientId], references: [id])
   contract    Contract?
+  porposal    Proposal[]
+}
+
+model Proposal {
+  id           Int            @id @default(autoincrement())
+  jobId        Int
+  job          Job            @relation(fields: [jobId], references: [id])
+  freelancerId Int
+  freelancer   User           @relation(fields: [freelancerId], references: [id])
+  coverLetter  String
+  budget       Float
+  status       ProposalStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([jobId, freelancerId])
 }
 
 model Contract {
