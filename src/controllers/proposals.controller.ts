@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { CreateProposalDto } from '../dtos/proposals.dto';
+import { CreateProposalDto, GetProposalParamsDto } from '../dtos/proposals.dto';
 import { TypedRequest } from '../types/request';
 import ProposalService from '../services/proposal.service';
 import { HttpStatus } from '../constants/http-codes';
@@ -17,6 +17,18 @@ class ProposalsController {
       const proposal = await ProposalService.create({ ...req.body, freelancerId: +sub });
 
       res.status(HttpStatus.CREATE_SUCCESS).json({ proposal });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  static async delete(req: TypedRequest<{}, GetProposalParamsDto>, res: Response) {
+    try {
+      const { sub } = req.user!;
+
+      await ProposalService.delete({ id: +req.params.id, freelancerId: +sub });
+
+      res.status(HttpStatus.NO_CONTENT).send();
     } catch (e) {
       console.log(e);
     }
