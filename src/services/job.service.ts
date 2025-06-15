@@ -72,3 +72,14 @@ export const updateJobById = async ({ id, clientId, ...rest }: UpdateJobParams) 
     data: { ...rest },
   });
 };
+
+export const checkJobOwnership = async ({ id, clientId }: GetJobParams) => {
+  const job = await getJobById(id);
+
+  // Handle later with custom AppError (sending custom code)
+  if (!job) throw new Error('Job not found');
+
+  if (job.clientId !== clientId) throw new Error('Not authorized to see this job proposals');
+
+  return job;
+};

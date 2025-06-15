@@ -12,6 +12,8 @@ router.get('/', authenticate, jobsController.listJobs);
 
 router.get('/:id', authenticate, validateRequestParams(getJobDto), jobsController.getJob);
 
+router.get('/:id/proposals', authenticate, authorize('CLIENT'), validateRequestParams(getJobDto), jobsController.getJobProposals);
+
 router.post('/', authenticate, authorize('CLIENT'), validateRequestBody(createJobDto), jobsController.create);
 
 router.patch('/:id', authenticate, authorize('CLIENT'), validateRequestParams(getJobDto), validateRequestBody(updateJobDto), jobsController.updateJob);

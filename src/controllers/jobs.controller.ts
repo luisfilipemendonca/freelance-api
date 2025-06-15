@@ -1,9 +1,10 @@
 import { Response } from 'express';
 import { CreateJobDto, GetJobDto, listJobQueryParamsDto, ListJobQueryParamsDto, UpdateJobDto } from '../dtos/jobs.dto';
 import { TypedRequest } from '../types/request';
-import { createJob, deleteJobById, getJobById, listAllJobs, updateJobById } from '../services/job.service';
+import { checkJobOwnership, createJob, deleteJobById, getJobById, listAllJobs, updateJobById } from '../services/job.service';
 import { HttpStatus } from '../constants/http-codes';
 import { validateRequestQueryParams } from '../middlewares/validateRequestQueryParams';
+import ProposalService from '../services/proposal.service';
 
 export const listJobs = async (req: TypedRequest<{}, {}, ListJobQueryParamsDto>, res: Response) => {
   try {
@@ -66,6 +67,19 @@ export const updateJob = async (req: TypedRequest<UpdateJobDto, GetJobDto>, res:
     const job = await updateJobById({ id: +id, clientId: +clientId, ...req.body });
 
     res.status(HttpStatus.READ_SUCCESS).json({ job });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+export const getJobProposals = async (req: TypedRequest<{}, GetJobDto>, res: Response) => {
+  try {
+    const { sub } = req.user!;
+
+    const job = await checkJobOwnership({ id: +req.params.id, clientId: +sub });
+    const proposals = await ProposalService.getProposalsByJobId(job.id);
+
+    res.status(HttpStatus.READ_SUCCESS).json({ proposals });
   } catch (e) {
     console.log(e);
   }

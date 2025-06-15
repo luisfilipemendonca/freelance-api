@@ -49,6 +49,17 @@ class ProposalService {
   static async getProposalsByFreelancerId(freelancerId: Proposal['freelancerId']) {
     return await prisma.proposal.findMany({ where: { freelancerId } });
   }
+
+  static async getProposalsByJobId(jobId: Proposal['jobId']) {
+    return await prisma.proposal.findMany({
+      where: { jobId },
+      include: {
+        freelancer: {
+          select: { id: true, email: true, username: true },
+        },
+      },
+    });
+  }
 }
 
 export default ProposalService;
