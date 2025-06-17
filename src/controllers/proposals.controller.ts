@@ -45,6 +45,19 @@ class ProposalsController {
       console.log(e);
     }
   }
+
+  static async accept(req: TypedRequest<{}, GetProposalParamsDto>, res: Response) {
+    try {
+      const { id } = req.params;
+      const { sub } = req.user!;
+
+      const contract = await ProposalService.accept(+id, +sub);
+
+      res.status(HttpStatus.CREATE_SUCCESS).json({ contract });
+    } catch (e) {
+      console.log(e);
+    }
+  }
 }
 
 export default ProposalsController;

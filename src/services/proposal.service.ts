@@ -1,6 +1,7 @@
-import { Proposal, User } from '@prisma/client';
+import { Job, Prisma, Proposal, ProposalStatus, User } from '@prisma/client';
 import { CreateProposalDto } from '../dtos/proposals.dto';
 import { prisma } from '../lib/prisma';
+import { ContractService } from './contract.service';
 
 type CreateProposal = CreateProposalDto & {
   freelancerId: User['id'];
@@ -9,6 +10,12 @@ type CreateProposal = CreateProposalDto & {
 type DeleteProposal = {
   id: Proposal['id'];
   freelancerId: Proposal['freelancerId'];
+};
+
+type UpdateProposal = {
+  id: Proposal['id'];
+  data: Partial<Omit<Proposal, 'id'>>;
+  tx: Prisma.TransactionClient;
 };
 
 class ProposalService {
@@ -42,8 +49,47 @@ class ProposalService {
     });
   }
 
-  static async getProposalById(id: Proposal['id']) {
-    return await prisma.proposal.findUnique({ where: { id } });
+  static async getProposalById(id: Proposal['id'], includeJob = false) {
+    let jobInclude: Prisma.ProposalInclude = {};
+
+    if (includeJob) {
+      jobInclude = {
+        job: {
+          select: {
+            id: true,
+            clientId: true,
+          },
+        },
+      };
+    }
+
+    return await prisma.proposal.findUnique({ where: { id }, include: jobInclude });
+  }
+
+  static async accept(id: Proposal['id'], clientId: Job['clientId']) {
+    const proposal = await this.getProposalById(id, true);
+
+    // handle 404 later
+    if (!proposal) throw new Error('Proposal not found');
+
+    // handle 403 later
+    if (clientId !== proposal.job.clientId) throw new Error('Not authorized to accept this proposal');
+
+    if (proposal.status !== 'PENDING') throw new Error('This proposal cannot be accepted');
+
+    return await prisma.$transaction(async (tx) => {
+      await this.updateProposalById({ id, data: { status: ProposalStatus.ACCEPTED }, tx });
+
+      return await ContractService.create({
+        tx,
+        data: {
+          jobId: proposal.jobId,
+          clientId,
+          freelancerId: proposal.freelancerId,
+          terms: 'Some terms',
+        },
+      });
+    });
   }
 
   static async getProposalsByFreelancerId(freelancerId: Proposal['freelancerId']) {
@@ -58,6 +104,13 @@ class ProposalService {
           select: { id: true, email: true, username: true },
         },
       },
+    });
+  }
+
+  static async updateProposalById({ data, id, tx }: UpdateProposal) {
+    return await tx.proposal.update({
+      where: { id },
+      data,
     });
   }
 }
