@@ -1,4 +1,4 @@
-import { Job, Prisma, Proposal, ProposalStatus, User } from '@prisma/client';
+import { Job, Prisma, PrismaClient, Proposal, ProposalStatus, User } from '@prisma/client';
 import { CreateProposalDto } from '../dtos/proposals.dto';
 import { prisma } from '../lib/prisma';
 import { ContractService } from './contract.service';
@@ -96,8 +96,10 @@ class ProposalService {
     return await prisma.proposal.findMany({ where: { freelancerId } });
   }
 
-  static async getProposalsByJobId(jobId: Proposal['jobId']) {
-    return await prisma.proposal.findMany({
+  static async getProposalsByJobId(jobId: Proposal['jobId'], tx?: Prisma.TransactionClient) {
+    const client = tx ?? prisma;
+
+    return await client.proposal.findMany({
       where: { jobId },
       include: {
         freelancer: {
@@ -112,6 +114,22 @@ class ProposalService {
       where: { id },
       data,
     });
+  }
+
+  static async rejectProposals(jobId: Proposal['jobId'], tx: Prisma.TransactionClient) {
+    const proposals = await this.getProposalsByJobId(jobId, tx);
+
+    const updates = proposals
+      .filter((p) => p.status !== ProposalStatus.ACCEPTED)
+      .map((proposal) =>
+        this.updateProposalById({
+          id: proposal.id,
+          data: { status: ProposalStatus.REJECTED },
+          tx,
+        })
+      );
+
+    await Promise.all(updates);
   }
 }
 
